@@ -70,7 +70,8 @@ function makeBook(obj) {
     editButton.classList.add('gray');
     editButton.innerText = 'Perbaharui';
     editButton.addEventListener('click', function () {
-      return;
+      const bookElement = updateBook(id);
+      container.append(bookElement);
     });
 
     const buttonWrapper = document.createElement('div');
@@ -95,6 +96,72 @@ function makeBook(obj) {
     }
 
     return container;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+function updateBook(id) {
+  try {
+    const book = findBook(id);
+
+    const labelTitle = document.createElement('label');
+    labelTitle.setAttribute('for', 'updateBookTitle');
+    labelTitle.innerText = 'Judul';
+    const inputTitle = document.createElement('input');
+    inputTitle.setAttribute('id', 'updateBookTitle');
+    inputTitle.setAttribute('type', 'text');
+    inputTitle.setAttribute('value', book.title);
+    inputTitle.setAttribute('required', '');
+    const updateTitleWrapper = document.createElement('div');
+    updateTitleWrapper.classList.add('update-wrapper');
+    updateTitleWrapper.append(labelTitle, inputTitle);
+
+    const labelAuthor = document.createElement('label');
+    labelAuthor.setAttribute('for', 'updateBookAuthor');
+    labelAuthor.innerText = 'Penulis';
+    const inputAuthor = document.createElement('input');
+    inputAuthor.setAttribute('id', 'updateBookAuthor');
+    inputAuthor.setAttribute('type', 'text');
+    inputAuthor.setAttribute('value', book.author);
+    inputAuthor.setAttribute('required', '');
+    const updateAuthorWrapper = document.createElement('div');
+    updateAuthorWrapper.classList.add('update-wrapper');
+    updateAuthorWrapper.append(labelAuthor, inputAuthor);
+
+    const labelYear = document.createElement('label');
+    labelYear.setAttribute('for', 'updateBookYear');
+    labelYear.innerText = 'Tahun';
+    const inputYear = document.createElement('input');
+    inputYear.setAttribute('id', 'updateBookYear');
+    inputYear.setAttribute('type', 'number');
+    inputYear.setAttribute('value', book.year);
+    inputYear.setAttribute('required', '');
+    const updateYearWrapper = document.createElement('div');
+    updateYearWrapper.classList.add('update-wrapper');
+    updateYearWrapper.append(labelYear, inputYear);
+
+    const submit = document.createElement('button');
+    submit.classList.add('update-button');
+    submit.setAttribute('id', 'updatedBookSubmit');
+    submit.setAttribute('type', 'submit');
+    submit.innerText = 'Ubah';
+
+    const form = document.createElement('form');
+    form.setAttribute('id', 'updateBook');
+    form.append(updateTitleWrapper, updateAuthorWrapper, updateYearWrapper, submit);
+
+    form.addEventListener('submit', function (e) {
+      book.title = inputTitle.value;
+      book.author = inputAuthor.value;
+      book.year = inputYear.value;
+      document.dispatchEvent(new Event(RENDER_EVENT));
+      saveData();
+
+      e.preventDefault();
+    });
+
+    return form;
   } catch (err) {
     console.error(err);
   }

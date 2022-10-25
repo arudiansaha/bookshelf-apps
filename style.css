@@ -178,3 +178,24 @@ p {
     background-color: rgb(123, 123, 123);
     color: white;
 }
+
+/* Update Form Styles */
+.update-wrapper {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    margin-block: 0.5rem;
+}
+
+.update-wrapper>input,
+.update-button {
+    padding: 0.25em 1em;
+    border: 2px solid inherit;
+    border-radius: 0.5rem;
+}
+
+.update-button {
+    border: none;
+    cursor: pointer;
+    background-color: royalblue;
+    color: white;
+}
