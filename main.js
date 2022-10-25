@@ -51,27 +51,28 @@ function makeBook(obj) {
     bookTitle.innerText = title;
 
     const bookAuthor = document.createElement('p');
-    bookAuthor.innerText = `Penulis: ${author}`;
+    bookAuthor.innerHTML = `Penulis: ${author}`;
 
     const bookYear = document.createElement('p');
-    bookYear.innerText = `Tahun: ${year}`;
+    bookYear.innerHTML = `Tahun: ${year}`;
 
     const statusButton = document.createElement('button');
-    statusButton.classList.add('green');
+    statusButton.classList.add('btn--blue');
 
     const removeButton = document.createElement('button');
-    removeButton.classList.add('red');
+    removeButton.classList.add('btn--red');
     removeButton.innerText = 'Hapus buku';
     removeButton.addEventListener('click', function () {
       removeBookById(id);
     });
 
     const editButton = document.createElement('button');
-    editButton.classList.add('gray');
     editButton.innerText = 'Perbaharui';
     editButton.addEventListener('click', function () {
       const bookElement = updateBook(id);
-      container.append(bookElement);
+      if (document.getElementById(`book-${id}`).childElementCount < 5) {
+        container.append(bookElement);
+      }
     });
 
     const buttonWrapper = document.createElement('div');
@@ -79,7 +80,7 @@ function makeBook(obj) {
     buttonWrapper.append(statusButton, removeButton, editButton);
 
     const container = document.createElement('article');
-    container.classList.add('book_item');
+    container.classList.add('book-item');
     container.append(bookTitle, bookAuthor, bookYear, buttonWrapper);
     container.setAttribute('id', `book-${id}`);
 
@@ -142,7 +143,6 @@ function updateBook(id) {
     updateYearWrapper.append(labelYear, inputYear);
 
     const submit = document.createElement('button');
-    submit.classList.add('update-button');
     submit.setAttribute('id', 'updatedBookSubmit');
     submit.setAttribute('type', 'submit');
     submit.innerText = 'Ubah';
@@ -154,7 +154,7 @@ function updateBook(id) {
     form.addEventListener('submit', function (e) {
       book.title = inputTitle.value;
       book.author = inputAuthor.value;
-      book.year = inputYear.value;
+      book.year = parseInt(inputYear.value);
       document.dispatchEvent(new Event(RENDER_EVENT));
       saveData();
 
@@ -215,7 +215,7 @@ function addBook() {
     const bookIsComplete = document.getElementById('inputBookIsComplete').checked;
 
     const bookId = generateId();
-    const book = generateBook(bookId, bookTitle, bookAuthor, bookYear, bookIsComplete);
+    const book = generateBook(bookId, bookTitle, bookAuthor, parseInt(bookYear), bookIsComplete);
     books.push(book);
     document.dispatchEvent(new Event(RENDER_EVENT));
     saveData();
