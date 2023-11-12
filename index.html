@@ -1,70 +1,78 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,700;1,400;1,700&display=swap"
-    rel="stylesheet">
+  <meta name="author" content="Rizky Ardiansyah">
+  <meta name="description"
+    content="Bookshelf Apps adalah aplikasi yang berguna untuk mencatat buku yang sudah maupun yang belum dibaca">
+  <meta name="keywords" content="books, books storage, books control">
+  <meta name="theme-color" content="#7f395f">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="stylesheet" href="style.css">
+
+  <title>Bookshelf Apps</title>
 </head>
 
 <body>
-  <header class="headbar">
-    <h1 class="headbar__title">Bookshelf Apps</h1>
+  <header class="header">
+    <h1 class="header__title">Bookshelf Apps</h1>
   </header>
-  <main>
-    <section class="section">
-      <h2>Masukkan Buku Baru</h2>
-      <form id="inputBook">
-        <div class="input-wrapper">
-          <label for="inputBookTitle">Judul</label>
-          <input id="inputBookTitle" type="text" required>
-        </div>
-        <div class="input-wrapper">
-          <label for="inputBookAuthor">Penulis</label>
-          <input id="inputBookAuthor" type="text" required>
-        </div>
-        <div class="input-wrapper">
-          <label for="inputBookYear">Tahun</label>
-          <input id="inputBookYear" type="number" required>
-        </div>
-        <div class="input-wrapper-inline">
-          <label for="inputBookIsComplete">Selesai dibaca</label>
-          <input id="inputBookIsComplete" type="checkbox">
-        </div>
-        <button class="btn--blue" id="bookSubmit" type="submit">Masukkan Buku ke rak</button>
+
+  <main class="content" id="content">
+    <article class="content__form">
+      <h2 class="content__title">Masukan Buku Baru</h2>
+      <form class="form" id="bookForm">
+        <fieldset class="form__field">
+          <label class="form__label" for="bookTitle">Judul</label>
+          <input class="form__input" id="bookTitle" type="text" required>
+        </fieldset>
+        <fieldset class="form__field">
+          <label class="form__label" for="bookAuthor">Penulis</label>
+          <input class="form__input" id="bookAuthor" type="text" required>
+        </fieldset>
+        <fieldset class="form__field">
+          <label class="form__label" for="bookYear">Tahun</label>
+          <input class="form__input" id="bookYear" type="number" min="1000" max="2023" required>
+        </fieldset>
+        <fieldset class="form__field form__field--custom">
+          <label class="form__label" for="bookIsComplete">Selesai dibaca</label>
+          <input class="form__input" id="bookIsComplete" type="checkbox">
+        </fieldset>
+        <button class="button button--primary" id="bookSubmit" type="submit">Masukan buku ke rak</button>
       </form>
-    </section>
+    </article>
 
-    <section class="section">
-      <h2>Cari Buku (Opsional)</h2>
-      <form class="search-book" id="searchBook">
-        <label for="searchBookTitle">Judul</label>
-        <input id="searchBookTitle" type="text">
-        <button class="btn--blue" id="searchSubmit" type="submit">Cari</button>
-      </form>
-    </section>
+    <article class="content__record">
+      <section class="content__section">
+        <h2 class="content__title">Cari Buku (Opsional)</h2>
+        <form class="form" id="searchForm">
+          <fieldset class="form__field">
+            <label class="form__label" for="bookSearch">Judul</label>
+            <input class="form__input form__input--custom" id="bookSearch" type="text">
+          </fieldset>
+          <button class="button button--primary button--custom" id="bookSearchSubmit" type="submit">Cari</button>
+        </form>
+      </section>
 
-    <section class="section">
-      <h2>Belum selesai dibaca</h2>
+      <section class="content__section">
+        <h2 class="content__title">Belum selesai dibaca</h2>
+        <ul class="content__list" id="bookUncompletedList"></ul>
+      </section>
 
-      <div id="incompleteBookshelfList" class="book-list"></div>
-    </section>
-
-    <section class="section">
-      <h2>Selesai dibaca</h2>
-
-      <div id="completeBookshelfList" class="book-list"></div>
-    </section>
+      <section class="content__section">
+        <h2 class="content__title">Selesai dibaca</h2>
+        <ul class="content__list" id="bookCompleteList"></ul>
+      </section>
+    </article>
   </main>
 
-  <script src="main.js"></script>
+  <footer class="footer">
+    <p class="foorter__paragraph">&copy; Rizky Ardiansyah 2023</p>
+  </footer>
 
+  <script src="main.js"></script>
 </body>
 
 </html>
