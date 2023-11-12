@@ -1,170 +1,286 @@
 const books = [];
 
-const STORAGE_KEY = 'BOOKSHELF_APPS';
+const STORAGE_KEY = 'BOOKSHELF_STORAGE';
 const RENDER_EVENT = 'render-book';
 const SAVED_EVENT = 'saved-event';
 
 
 function generateId() {
-  return +new Date();
+  return `book-${+new Date()}`;
 };
 
-function generateBook(id, title, author, year, isComplete) {
+function generateBook({ id, title, author, year, isComplete }) {
   return {
     id, title, author, year, isComplete
   };
 };
 
 function findBook(id) {
-  try {
-    for (const book of books) {
-      if (book.id === id) {
-        return book;
-      }
-    }
-
-    return null;
-  } catch (err) {
-    console.error(err);
+  for (const book of books) {
+    if (book.id === id) return book;
   }
+
+  return null;
 };
 
-function findBookIndexById(id) {
-  try {
-    for (const i in books) {
-      if (books[i].id === id) {
-        return i;
-      }
-    }
-
-    return -1;
-  } catch (err) {
-    console.error(err);
+function findBookIndex(id) {
+  for (const index in books) {
+    if (books[index].id === id) return index;
   }
+
+  return -1;
 };
 
-function makeBook(obj) {
-  try {
-    const { id, title, author, year, isComplete } = obj;
+function createPopupElement(id) {
+  const paragraphPopupElement = createInfoElement({
+    name: 'p',
+    className: 'popup__paragraph',
+    text: 'Anda yakin ingin menghapus buku?',
+  });
 
-    const bookTitle = document.createElement('h3');
-    bookTitle.innerText = title;
+  const cancelButtonElement = createButtonElement({
+    className: 'button button--primary', type: 'button', text: 'Batal',
+  });
 
-    const bookAuthor = document.createElement('p');
-    bookAuthor.innerHTML = `Penulis: ${author}`;
+  cancelButtonElement.addEventListener('click', (event) => {
+    event.stopPropagation();
 
-    const bookYear = document.createElement('p');
-    bookYear.innerHTML = `Tahun: ${year}`;
+    if (popupElement.classList.contains('popup--enabled')) {
+      document.querySelector('.popup').remove();
+    }
+  });
 
-    const statusButton = document.createElement('button');
-    statusButton.classList.add('btn--blue');
+  const deleteButtonElement = createButtonElement({
+    className: 'button button--secondary', type: 'button', text: 'Hapus',
+  });
 
-    const removeButton = document.createElement('button');
-    removeButton.classList.add('btn--red');
-    removeButton.innerText = 'Hapus buku';
-    removeButton.addEventListener('click', function () {
-      removeBookById(id);
-    });
+  deleteButtonElement.addEventListener('click', (event) => {
+    event.stopPropagation();
 
-    const editButton = document.createElement('button');
-    editButton.innerText = 'Perbaharui';
-    editButton.addEventListener('click', function () {
-      const bookElement = updateBook(id);
-      if (document.getElementById(`book-${id}`).childElementCount < 5) {
-        container.append(bookElement);
-      }
-    });
+    document.querySelector('.popup').remove();
+    deleteBook(id);
+  })
 
-    const buttonWrapper = document.createElement('div');
-    buttonWrapper.classList.add('action');
-    buttonWrapper.append(statusButton, removeButton, editButton);
+  const actionPopupElement = createInfoElement({
+    name: 'div', className: 'popup__action', text: '',
+  });
 
-    const container = document.createElement('article');
-    container.classList.add('book-item');
-    container.append(bookTitle, bookAuthor, bookYear, buttonWrapper);
-    container.setAttribute('id', `book-${id}`);
+  actionPopupElement.append(cancelButtonElement, deleteButtonElement);
+
+  const cardPopupElement = createInfoElement({
+    name: 'div', className: 'popup__card', text: '',
+  });
+
+  cardPopupElement.append(paragraphPopupElement, actionPopupElement);
+
+  const popupElement = createInfoElement({
+    name: 'div', className: 'popup', text: '',
+  });
+
+  popupElement.append(cardPopupElement);
+
+  return popupElement;
+}
+
+function createButtonElement({ className, type, text }) {
+  const element = document.createElement('button');
+  element.setAttribute('class', className);
+  element.setAttribute('type', type);
+  element.innerText = text;
+
+  return element;
+}
+
+function createInfoElement({ name, className, text }) {
+  const element = document.createElement(name);
+  element.setAttribute('class', className);
+  element.innerText = text;
+
+  return element;
+}
+
+function createLabelElement({ className, id, text }) {
+  const element = document.createElement('label');
+  element.setAttribute('class', className);
+  element.setAttribute('for', id);
+  element.innerText = text;
+
+  return element;
+}
+
+function createInputElement({ className, id, type, value }) {
+  const element = document.createElement('input');
+  element.setAttribute('class', className);
+  element.setAttribute('id', id);
+  element.setAttribute('type', type);
+  element.setAttribute('value', value);
+  element.setAttribute('required', '');
+
+  return element;
+}
+
+function createFieldsetElement(className) {
+  const element = document.createElement('fieldset');
+  element.setAttribute('class', className);
+
+  return element;
+}
+
+function createBook(book) {
+  const { id, title, author, year, isComplete } = book;
+
+  const titleElement = createInfoElement({
+    name: 'h3', className: 'book__title', text: title,
+  });
+
+  const authorElement = createInfoElement({
+    name: 'p', className: 'book__paragraph', text: author,
+  });
+
+  const yearElement = createInfoElement({
+    name: 'p', className: 'book__paragraph', text: year,
+  });
+
+  const addButtonText = (isComplete)
+    ? 'Belum selesai dibaca'
+    : 'Selesai dibaca';
+
+  const addButtonElement = createButtonElement({
+    className: 'button button--primary', type: 'button', text: addButtonText,
+  });
+
+  addButtonElement.addEventListener('click', (event) => {
+    event.stopPropagation();
 
     if (isComplete) {
-      statusButton.innerText = 'Belum selesai di Baca';
-      statusButton.addEventListener('click', function () {
-        changeToIncomplete(id);
-      });
+      updateToUncompleted(id);
     } else {
-      statusButton.innerText = 'Selesai dibaca';
-      statusButton.addEventListener('click', function () {
-        changeToCompleted(id);
-      });
+      updateToComplete(id);
     }
+  });
 
-    return container;
-  } catch (err) {
-    console.error(err);
-  }
+  const deleteButtonElement = createButtonElement({
+    className: 'button button--secondary', type: 'button', text: 'Hapus buku',
+  });
+
+  deleteButtonElement.addEventListener('click', (event) => {
+    event.stopPropagation();
+
+    const popupElement = createPopupElement(id);
+    popupElement.classList.add('popup--enabled');
+
+    const bodyElement = document.querySelector('body');
+    bodyElement.append(popupElement);
+  });
+
+  const editButtonElement = createButtonElement({
+    className: 'button button--secondary', type: 'button', text: 'Perbaharui',
+  });
+
+  editButtonElement.addEventListener('click', (event) => {
+    event.stopPropagation();
+
+    const bookElement = updateBook(id);
+    const numberOfBookElementChild = document
+      .getElementById(id)
+      .childElementCount;
+
+    if (numberOfBookElementChild < 5) {
+      itemElement.append(bookElement);
+    }
+  });
+
+  const actionElement = createInfoElement({
+    name: 'div', className: 'book__action', text: '',
+  });
+
+  actionElement.append(
+    addButtonElement, deleteButtonElement, editButtonElement,
+  );
+
+  const itemElement = createInfoElement({
+    name: 'li', className: 'content__item', text: ''
+  });
+
+  itemElement.setAttribute('id', id);
+  itemElement.append(titleElement, authorElement, yearElement, actionElement);
+
+  return itemElement;
 };
 
 function updateBook(id) {
-  try {
-    const book = findBook(id);
+  const book = findBook(id);
 
-    const labelTitle = document.createElement('label');
-    labelTitle.setAttribute('for', 'updateBookTitle');
-    labelTitle.innerText = 'Judul';
-    const inputTitle = document.createElement('input');
-    inputTitle.setAttribute('id', 'updateBookTitle');
-    inputTitle.setAttribute('type', 'text');
-    inputTitle.setAttribute('value', book.title);
-    inputTitle.setAttribute('required', '');
-    const updateTitleWrapper = document.createElement('div');
-    updateTitleWrapper.classList.add('update-wrapper');
-    updateTitleWrapper.append(labelTitle, inputTitle);
+  const titleLabelElement = createLabelElement({
+    className: 'form__label', id: 'updateBookTitle', text: 'Judul',
+  });
 
-    const labelAuthor = document.createElement('label');
-    labelAuthor.setAttribute('for', 'updateBookAuthor');
-    labelAuthor.innerText = 'Penulis';
-    const inputAuthor = document.createElement('input');
-    inputAuthor.setAttribute('id', 'updateBookAuthor');
-    inputAuthor.setAttribute('type', 'text');
-    inputAuthor.setAttribute('value', book.author);
-    inputAuthor.setAttribute('required', '');
-    const updateAuthorWrapper = document.createElement('div');
-    updateAuthorWrapper.classList.add('update-wrapper');
-    updateAuthorWrapper.append(labelAuthor, inputAuthor);
+  const titleInputElement = createInputElement({
+    className: 'form__input',
+    id: 'updateBookTitle',
+    type: 'text',
+    value: book.title,
+  });
 
-    const labelYear = document.createElement('label');
-    labelYear.setAttribute('for', 'updateBookYear');
-    labelYear.innerText = 'Tahun';
-    const inputYear = document.createElement('input');
-    inputYear.setAttribute('id', 'updateBookYear');
-    inputYear.setAttribute('type', 'number');
-    inputYear.setAttribute('value', book.year);
-    inputYear.setAttribute('required', '');
-    const updateYearWrapper = document.createElement('div');
-    updateYearWrapper.classList.add('update-wrapper');
-    updateYearWrapper.append(labelYear, inputYear);
+  const titleFieldsetElement = createFieldsetElement('form__field');
+  titleFieldsetElement.append(titleLabelElement, titleInputElement);
 
-    const submit = document.createElement('button');
-    submit.setAttribute('id', 'updatedBookSubmit');
-    submit.setAttribute('type', 'submit');
-    submit.innerText = 'Ubah';
+  const authorLabelElement = createLabelElement({
+    className: 'form__label', id: 'updateBookAuthor', text: 'Penulis',
+  });
 
-    const form = document.createElement('form');
-    form.setAttribute('id', 'updateBook');
-    form.append(updateTitleWrapper, updateAuthorWrapper, updateYearWrapper, submit);
+  const authorInputElement = createInputElement({
+    className: 'form__input',
+    id: 'updateBookAuthor',
+    type: 'text',
+    value: book.author,
+  });
 
-    form.addEventListener('submit', function (e) {
-      book.title = inputTitle.value;
-      book.author = inputAuthor.value;
-      book.year = parseInt(inputYear.value);
-      document.dispatchEvent(new Event(RENDER_EVENT));
-      saveData();
+  const authorFieldsetElement = createFieldsetElement('form__field');
+  authorFieldsetElement.append(authorLabelElement, authorInputElement);
 
-      e.preventDefault();
-    });
+  const yearLabelElement = createLabelElement({
+    className: 'form__label', id: 'updateBookYear', text: 'Tahun',
+  });
 
-    return form;
-  } catch (err) {
-    console.error(err);
-  }
+  const yearInputElement = createInputElement({
+    className: 'form__input',
+    id: 'updateBookYear',
+    type: 'number',
+    value: book.year,
+  });
+
+  const yearFieldsetElement = createFieldsetElement('form__field');
+  yearFieldsetElement.append(yearLabelElement, yearInputElement);
+
+  const submitButtonElement = createButtonElement({
+    className: 'button button--primary', type: 'submit', text: 'Selesai',
+  });
+
+  submitButtonElement.setAttribute('id', 'updateBookSubmit');
+
+  const formElement = document.createElement('form');
+  formElement.setAttribute('class', 'form')
+  formElement.setAttribute('id', 'updateBookForm');
+  formElement.append(
+    titleFieldsetElement,
+    authorFieldsetElement,
+    yearFieldsetElement,
+    submitButtonElement,
+  );
+
+  formElement.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    book.title = titleInputElement.value
+    book.author = authorInputElement.value
+    book.year = parseInt(yearInputElement.value);
+
+    document.dispatchEvent(new Event(RENDER_EVENT));
+    saveBook();
+  });
+
+  return formElement;
 };
 
 function isStorageExist() {
@@ -176,150 +292,122 @@ function isStorageExist() {
   return true;
 };
 
-function saveData() {
-  try {
-    if (isStorageExist()) {
-      const parsed = JSON.stringify(books);
-      localStorage.setItem(STORAGE_KEY, parsed);
-      document.dispatchEvent(new Event(SAVED_EVENT));
-    }
-  } catch (err) {
-    console.error(err);
+function saveBook() {
+  if (isStorageExist()) {
+    const parsedBooks = JSON.stringify(books);
+    localStorage.setItem(STORAGE_KEY, parsedBooks);
+    document.dispatchEvent(new Event(SAVED_EVENT));
   }
 };
 
 
-function loadData() {
-  try {
-    const serializedData = localStorage.getItem(STORAGE_KEY);
-    let data = JSON.parse(serializedData);
+function loadBook() {
+  const serializedBooks = localStorage.getItem(STORAGE_KEY);
+  let parsedBooks = JSON.parse(serializedBooks);
 
-    if (data !== null) {
-      for (const book of data) {
-        books.push(book);
-      }
+  if (parsedBooks !== null) {
+    for (const book of parsedBooks) {
+      books.push(book);
     }
-
-    document.dispatchEvent(new Event(RENDER_EVENT));
-  } catch (err) {
-    console.error(err);
   }
+
+  document.dispatchEvent(new Event(RENDER_EVENT));
 };
 
 
 function addBook() {
-  try {
-    const bookTitle = document.getElementById('inputBookTitle').value;
-    const bookAuthor = document.getElementById('inputBookAuthor').value;
-    const bookYear = document.getElementById('inputBookYear').value;
-    const bookIsComplete = document.getElementById('inputBookIsComplete').checked;
+  const id = generateId();
+  const title = document.getElementById('bookTitle').value;
+  const author = document.getElementById('bookAuthor').value;
+  const year = document.getElementById('bookYear').value;
+  const isComplete = document.getElementById('bookIsComplete').checked;
 
-    const bookId = generateId();
-    const book = generateBook(bookId, bookTitle, bookAuthor, parseInt(bookYear), bookIsComplete);
-    books.push(book);
-    document.dispatchEvent(new Event(RENDER_EVENT));
-    saveData();
-  } catch (err) {
-    console.error(err);
-  }
+  const book = generateBook({ id, title, author, year, isComplete });
+  books.push(book);
+
+  document.dispatchEvent(new Event(RENDER_EVENT));
+  saveBook();
 };
 
-function changeToCompleted(id) {
-  try {
-    const bookTarget = findBook(id);
+function updateToComplete(id) {
+  const book = findBook(id);
+  if (book === null) return;
+  book.isComplete = true;
 
-    if (bookTarget === null) return;
-
-    bookTarget.isComplete = true;
-    document.dispatchEvent(new Event(RENDER_EVENT));
-    saveData();
-  } catch (err) {
-    console.error(err);
-  }
+  document.dispatchEvent(new Event(RENDER_EVENT));
+  saveBook();
 };
 
-function changeToIncomplete(id) {
-  try {
-    const bookTarget = findBook(id);
+function updateToUncompleted(id) {
+  const book = findBook(id);
+  if (book === null) return;
+  book.isComplete = false;
 
-    if (bookTarget === null) return;
-
-    bookTarget.isComplete = false;
-    document.dispatchEvent(new Event(RENDER_EVENT));
-    saveData();
-  } catch (err) {
-    console.error(err);
-  }
+  document.dispatchEvent(new Event(RENDER_EVENT));
+  saveBook();
 };
 
 
-function removeBookById(id) {
-  try {
-    const bookTarget = findBook(id);
+function deleteBook(id) {
+  const book = findBook(id);
+  const bookIndex = books.indexOf(book);
 
-    if (bookTarget === -1) return;
+  if (bookIndex === -1) return;
+  books.splice(bookIndex, 1);
 
-    books.splice(bookTarget, 1);
-    document.dispatchEvent(new Event(RENDER_EVENT));
-    saveData();
-  } catch (err) {
-    console.error(err);
-  }
+  document.dispatchEvent(new Event(RENDER_EVENT));
+  saveBook();
 };
 
-document.addEventListener('DOMContentLoaded', function () {
-  const inputBookForm = document.getElementById('inputBook');
-  const searchBookForm = document.getElementById('searchBook');
+const bookFormElement = document.getElementById('bookForm');
+const searchFormElement = document.getElementById('searchForm');
 
+const bookUncompletedListElement = document.getElementById('bookUncompletedList');
+const bookCompleteListElement = document.getElementById('bookCompleteList');
 
-  inputBookForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    addBook();
+document.addEventListener('DOMContentLoaded', () => {
+  if (isStorageExist()) loadBook()
+})
+
+bookFormElement.addEventListener('submit', (event) => {
+  event.preventDefault();
+
+  addBook();
+});
+
+searchFormElement.addEventListener('submit', (event) => {
+  event.preventDefault();
+
+  bookUncompletedListElement.innerText = '';
+  bookCompleteListElement.innerText = '';
+
+  const title = document.getElementById('bookSearch').value.toLowerCase();
+  const filteredBook = books.filter((book) => {
+    return book.title.toLowerCase().includes(title)
   });
 
-  searchBookForm.addEventListener('submit', function (e) {
-    const incompleteBookshelfList = document.getElementById('incompleteBookshelfList');
-    const completeBookshelfList = document.getElementById('completeBookshelfList');
-
-    incompleteBookshelfList.innerText = '';
-    completeBookshelfList.innerText = '';
-
-    const bookTitle = document.getElementById('searchBookTitle');
-    const bookTitleValue = bookTitle.value.toLowerCase();
-    const filteredBook = books.filter((b) => b.title.toLowerCase().includes(bookTitleValue));
-
-    for (const book of filteredBook) {
-      if (book.isComplete) {
-        const bookElement = makeBook(book);
-        completeBookshelfList.append(bookElement);
-      } else {
-        const bookElement = makeBook(book);
-        incompleteBookshelfList.append(bookElement);
-      }
+  for (const book of filteredBook) {
+    if (book.isComplete) {
+      const bookElement = createBook(book);
+      bookCompleteListElement.append(bookElement);
+    } else {
+      const bookElement = createBook(book);
+      bookUncompletedListElement.append(bookElement);
     }
-
-    e.preventDefault();
-  });
-
-  if (isStorageExist()) {
-    loadData()
   }
 });
 
-document.addEventListener(RENDER_EVENT, function () {
-  const incompleteBookshelfList = document.getElementById('incompleteBookshelfList');
-  const completeBookshelfList = document.getElementById('completeBookshelfList');
-
-  incompleteBookshelfList.innerText = '';
-  completeBookshelfList.innerText = '';
+document.addEventListener(RENDER_EVENT, () => {
+  bookUncompletedListElement.innerText = '';
+  bookCompleteListElement.innerText = '';
 
   for (const book of books) {
-    const bookElement = makeBook(book);
+    const bookElement = createBook(book);
 
     if (book.isComplete) {
-      completeBookshelfList.append(bookElement);
+      bookCompleteListElement.append(bookElement);
     } else {
-      incompleteBookshelfList.append(bookElement)
+      bookUncompletedListElement.append(bookElement)
     }
   }
 });
