@@ -311,3 +311,17 @@ button {
     width: 32.133333333%;
   }
 }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-neutral-00: #edd5f6;
+    --color-neutral-01: #030104;
+    --color-neutral-02: #66d63d;
+    --color-primary-00: #2c6916;
+    --color-primary-01: #0c3b2e;
+  }
+
+  .form__input {
+    background-color: var(--color-neutral-00);
+  }
+}
